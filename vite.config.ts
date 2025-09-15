@@ -10,6 +10,8 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: 'dist',
+    emptyOutDir: true,
     rollupOptions: {
       input: {
         sidepanel: resolve(__dirname, 'src/sidepanel.html'),
@@ -26,5 +28,6 @@ export default defineConfig({
         },
       },
     },
+    copyPublicDir: true,
   },
 })
