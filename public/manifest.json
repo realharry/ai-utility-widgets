@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "AI Utility Widgets",
+  "version": "1.0.0",
+  "description": "A collection of useful widgets with AI integration",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://api.exchangerate-api.com/*",
+    "https://api.openweathermap.org/*",
+    "https://api.dictionaryapi.dev/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Open AI Utility Widgets"
+  },
+  "icons": {
+    "16": "icon16.svg",
+    "32": "icon32.svg",
+    "48": "icon48.svg",
+    "128": "icon128.svg"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
