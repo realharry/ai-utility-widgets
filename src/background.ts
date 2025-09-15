@@ -1,19 +1,14 @@
 // Background script for the Chrome extension
-chrome.runtime.onInstalled.addListener(() => {
-  // Enable the side panel on all sites by default
+chrome.runtime.onInstalled.addListener(async () => {
+  // Set the action to open side panel by default
+  await chrome.sidePanel.setPanelBehavior({
+    openPanelOnActionClick: true
+  });
+  
+  // Enable the side panel globally
   chrome.sidePanel.setOptions({
     enabled: true
   });
-});
-
-// Handle action button click to open side panel
-chrome.action.onClicked.addListener((tab) => {
-  if (tab.id) {
-    chrome.sidePanel.setOptions({
-      tabId: tab.id,
-      enabled: true
-    });
-  }
 });
 
 // Handle alarm events for the alarm clock widget

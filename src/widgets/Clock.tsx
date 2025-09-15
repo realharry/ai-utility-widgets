@@ -61,17 +61,21 @@ export const Clock: React.FC = () => {
   const setAlarm = () => {
     if (alarmTime) {
       setIsAlarmSet(true);
-      // Create Chrome alarm
-      chrome.alarms.create('widget-alarm', {
-        when: Date.now() + 1000 // For demo, set 1 second from now
-      });
+      // Create Chrome alarm if available
+      if (typeof chrome !== 'undefined' && chrome.alarms && chrome.alarms.create) {
+        chrome.alarms.create('widget-alarm', {
+          when: Date.now() + 1000 // For demo, set 1 second from now
+        });
+      }
     }
   };
 
   const clearAlarm = () => {
     setIsAlarmSet(false);
     setAlarmTime('');
-    chrome.alarms.clear('widget-alarm');
+    if (typeof chrome !== 'undefined' && chrome.alarms && chrome.alarms.clear) {
+      chrome.alarms.clear('widget-alarm');
+    }
   };
 
   const startStopwatch = () => {

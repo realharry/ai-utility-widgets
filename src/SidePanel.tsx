@@ -27,13 +27,19 @@ export const SidePanel: React.FC = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load LLM settings from Chrome storage
-    chrome.storage.sync.get(['llmApiKey', 'llmModel'], (result) => {
-      setLlmSettings({
-        apiKey: result.llmApiKey,
-        model: result.llmModel || 'gpt-3.5-turbo'
+    // Load LLM settings from Chrome storage with error handling
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get(['llmApiKey', 'llmModel'], (result) => {
+        setLlmSettings({
+          apiKey: result.llmApiKey,
+          model: result.llmModel || 'gpt-3.5-turbo'
+        });
       });
-    });
+    } else {
+      setLlmSettings({
+        model: 'gpt-3.5-turbo'
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -130,7 +136,9 @@ export const SidePanel: React.FC = () => {
   };
 
   const openOptions = () => {
-    chrome.runtime.openOptionsPage();
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+      chrome.runtime.openOptionsPage();
+    }
   };
 
   return (

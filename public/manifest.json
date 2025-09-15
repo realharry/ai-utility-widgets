@@ -28,5 +28,8 @@
     "32": "icon32.svg",
     "48": "icon48.svg",
     "128": "icon128.svg"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }
