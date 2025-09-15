@@ -24,16 +24,20 @@ export const SidePanel: React.FC = () => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [, setLlmSettings] = useState<{ apiKey?: string; model?: string }>({});
+  const [selectedWidgets, setSelectedWidgets] = useState<string[]>(['calculator', 'clock']);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load LLM settings from Chrome storage with error handling
+    // Load LLM settings and selected widgets from Chrome storage with error handling
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-      chrome.storage.sync.get(['llmApiKey', 'llmModel'], (result) => {
+      chrome.storage.sync.get(['llmApiKey', 'llmModel', 'selectedWidgets'], (result) => {
         setLlmSettings({
           apiKey: result.llmApiKey,
           model: result.llmModel || 'gpt-3.5-turbo'
         });
+        if (result.selectedWidgets && Array.isArray(result.selectedWidgets)) {
+          setSelectedWidgets(result.selectedWidgets);
+        }
       });
     } else {
       setLlmSettings({
@@ -135,6 +139,25 @@ export const SidePanel: React.FC = () => {
     }
   };
 
+  const renderWidget = (widgetId: string) => {
+    switch (widgetId) {
+      case 'calculator':
+        return <Calculator key="calculator" />;
+      case 'clock':
+        return <Clock key="clock" />;
+      case 'dictionary':
+        return <Dictionary key="dictionary" />;
+      case 'weather':
+        return <Weather key="weather" />;
+      case 'currency':
+        return <CurrencyConverter key="currency" />;
+      case 'units':
+        return <UnitConverter key="units" />;
+      default:
+        return null;
+    }
+  };
+
   const openOptions = () => {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
       chrome.runtime.openOptionsPage();
@@ -151,26 +174,24 @@ export const SidePanel: React.FC = () => {
         </Button>
       </div>
 
-      {/* Widgets Grid - 3x2 layout */}
-      <div className="grid grid-cols-3 gap-3 flex-1 min-h-0 mb-4">
-        <div className="h-full">
-          <Calculator />
-        </div>
-        <div className="h-full">
-          <Clock />
-        </div>
-        <div className="h-full">
-          <Dictionary />
-        </div>
-        <div className="h-full">
-          <Weather />
-        </div>
-        <div className="h-full">
-          <CurrencyConverter />
-        </div>
-        <div className="h-full">
-          <UnitConverter />
-        </div>
+      {/* Widgets Grid - 2x1 or 1x2 layout for selected widgets */}
+      <div className="grid grid-cols-2 gap-4 flex-1 min-h-0 mb-4">
+        {selectedWidgets.slice(0, 2).map((widgetId) => (
+          <div key={widgetId} className="h-full">
+            {renderWidget(widgetId)}
+          </div>
+        ))}
+        {selectedWidgets.length < 2 && (
+          <div className="h-full flex items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg">
+            <div className="text-center text-muted-foreground p-4">
+              <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Select widgets in</p>
+              <Button variant="link" size="sm" onClick={openOptions} className="p-0 h-auto text-sm">
+                Options page
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Chat Section */}

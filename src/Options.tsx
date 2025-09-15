@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Settings, Save, Eye, EyeOff } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Settings, Save, Eye, EyeOff, Calculator, Clock, BookOpen, Cloud, DollarSign, Ruler } from 'lucide-react';
 
 const LLM_MODELS = [
   { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
@@ -20,6 +21,15 @@ const LLM_PROVIDERS = [
   { value: 'custom', label: 'Custom API' },
 ];
 
+const AVAILABLE_WIDGETS = [
+  { id: 'calculator', name: 'Calculator', icon: Calculator, description: 'Basic and scientific calculator' },
+  { id: 'clock', name: 'Clock', icon: Clock, description: 'Time display, alarm, and stopwatch' },
+  { id: 'dictionary', name: 'Dictionary', icon: BookOpen, description: 'English word definitions and lookup' },
+  { id: 'weather', name: 'Weather', icon: Cloud, description: 'Local weather information' },
+  { id: 'currency', name: 'Currency Converter', icon: DollarSign, description: 'Convert between currencies' },
+  { id: 'units', name: 'Unit Converter', icon: Ruler, description: 'Convert metric and imperial units' },
+];
+
 export const Options: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('gpt-3.5-turbo');
@@ -28,20 +38,25 @@ export const Options: React.FC = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [selectedWidgets, setSelectedWidgets] = useState<string[]>(['calculator', 'clock']);
 
   useEffect(() => {
-    // Load saved settings
-    chrome.storage.sync.get([
-      'llmApiKey',
-      'llmModel',
-      'llmProvider',
-      'llmCustomEndpoint'
-    ], (result) => {
-      if (result.llmApiKey) setApiKey(result.llmApiKey);
-      if (result.llmModel) setModel(result.llmModel);
-      if (result.llmProvider) setProvider(result.llmProvider);
-      if (result.llmCustomEndpoint) setCustomEndpoint(result.llmCustomEndpoint);
-    });
+    // Load saved settings with error handling
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get([
+        'llmApiKey',
+        'llmModel',
+        'llmProvider',
+        'llmCustomEndpoint',
+        'selectedWidgets'
+      ], (result) => {
+        if (result.llmApiKey) setApiKey(result.llmApiKey);
+        if (result.llmModel) setModel(result.llmModel);
+        if (result.llmProvider) setProvider(result.llmProvider);
+        if (result.llmCustomEndpoint) setCustomEndpoint(result.llmCustomEndpoint);
+        if (result.selectedWidgets) setSelectedWidgets(result.selectedWidgets);
+      });
+    }
   }, []);
 
   const saveSettings = async () => {
@@ -49,14 +64,18 @@ export const Options: React.FC = () => {
     setSaveMessage('');
 
     try {
-      await chrome.storage.sync.set({
-        llmApiKey: apiKey,
-        llmModel: model,
-        llmProvider: provider,
-        llmCustomEndpoint: customEndpoint,
-      });
-
-      setSaveMessage('Settings saved successfully!');
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+        await chrome.storage.sync.set({
+          llmApiKey: apiKey,
+          llmModel: model,
+          llmProvider: provider,
+          llmCustomEndpoint: customEndpoint,
+          selectedWidgets: selectedWidgets,
+        });
+        setSaveMessage('Settings saved successfully!');
+      } else {
+        setSaveMessage('Chrome extension storage not available. Settings cannot be saved in this context.');
+      }
       setTimeout(() => setSaveMessage(''), 3000);
     } catch (error) {
       setSaveMessage('Error saving settings. Please try again.');
@@ -67,14 +86,25 @@ export const Options: React.FC = () => {
   };
 
   const clearSettings = async () => {
-    if (confirm('Are you sure you want to clear all LLM settings?')) {
-      await chrome.storage.sync.clear();
+    if (confirm('Are you sure you want to clear all settings?')) {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+        await chrome.storage.sync.clear();
+      }
       setApiKey('');
       setModel('gpt-3.5-turbo');
       setProvider('openai');
       setCustomEndpoint('');
+      setSelectedWidgets(['calculator', 'clock']);
       setSaveMessage('Settings cleared successfully!');
       setTimeout(() => setSaveMessage(''), 3000);
+    }
+  };
+
+  const handleWidgetToggle = (widgetId: string, checked: boolean) => {
+    if (checked && selectedWidgets.length < 2) {
+      setSelectedWidgets([...selectedWidgets, widgetId]);
+    } else if (!checked) {
+      setSelectedWidgets(selectedWidgets.filter(id => id !== widgetId));
     }
   };
 
@@ -190,6 +220,66 @@ export const Options: React.FC = () => {
                 {saveMessage}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Widget Selection</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Select exactly 2 widgets to display in the side panel. This helps reduce clutter and improve usability.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3">
+              {AVAILABLE_WIDGETS.map((widget) => {
+                const Icon = widget.icon;
+                const isSelected = selectedWidgets.includes(widget.id);
+                const canSelect = selectedWidgets.length < 2 || isSelected;
+                
+                return (
+                  <div
+                    key={widget.id}
+                    className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors ${
+                      isSelected 
+                        ? 'border-primary bg-primary/5' 
+                        : canSelect 
+                          ? 'border-muted hover:border-primary/50' 
+                          : 'border-muted bg-muted/30 opacity-60'
+                    }`}
+                  >
+                    <Checkbox
+                      id={widget.id}
+                      checked={isSelected}
+                      onCheckedChange={(checked) => handleWidgetToggle(widget.id, checked as boolean)}
+                      disabled={!canSelect}
+                    />
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex-1">
+                      <Label
+                        htmlFor={widget.id}
+                        className={`font-medium ${!canSelect ? 'text-muted-foreground' : ''}`}
+                      >
+                        {widget.name}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {widget.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="bg-blue-50 p-3 rounded text-sm">
+              <strong>Selected:</strong> {selectedWidgets.length}/2 widgets
+              {selectedWidgets.length === 2 && (
+                <span className="text-green-600 ml-2">✓ Ready to save!</span>
+              )}
+              {selectedWidgets.length < 2 && (
+                <span className="text-orange-600 ml-2">Select {2 - selectedWidgets.length} more widget{2 - selectedWidgets.length !== 1 ? 's' : ''}</span>
+              )}
+            </div>
           </CardContent>
         </Card>
 
