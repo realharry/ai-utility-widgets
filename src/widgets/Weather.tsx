@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Cloud, Sun, CloudRain, Snow, MapPin, Loader2 } from 'lucide-react';
+import { Cloud, Sun, CloudRain, MapPin, Loader2 } from 'lucide-react';
 
 interface WeatherData {
   location: string;
@@ -20,7 +20,7 @@ export const Weather: React.FC = () => {
   const [error, setError] = useState('');
 
   // Note: In a real app, you'd need an API key from OpenWeatherMap
-  const API_KEY = 'demo_key'; // Replace with actual API key
+  // const API_KEY = 'demo_key'; // Replace with actual API key
 
   useEffect(() => {
     // Get user's location on component mount
@@ -44,7 +44,7 @@ export const Weather: React.FC = () => {
     }
   };
 
-  const getWeatherByCoords = async (lat: number, lon: number) => {
+  const getWeatherByCoords = async (_lat: number, _lon: number) => {
     setLoading(true);
     setError('');
 
@@ -106,7 +106,7 @@ export const Weather: React.FC = () => {
       case 'rain':
         return <CloudRain className="h-6 w-6 text-blue-500" />;
       case 'snow':
-        return <Snow className="h-6 w-6 text-blue-200" />;
+        return <Cloud className="h-6 w-6 text-blue-200" />;
       default:
         return <Sun className="h-6 w-6 text-yellow-500" />;
     }

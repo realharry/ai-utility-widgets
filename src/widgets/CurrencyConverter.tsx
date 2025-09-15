@@ -90,7 +90,7 @@ export const CurrencyConverter: React.FC = () => {
     return CURRENCIES.find(c => c.code === code)?.symbol || code;
   };
 
-  const formatAmount = (value: number, currencyCode: string) => {
+  const formatAmount = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -160,10 +160,10 @@ export const CurrencyConverter: React.FC = () => {
             ) : result !== null ? (
               <div className="space-y-1">
                 <div className="text-lg font-semibold">
-                  {getCurrencySymbol(toCurrency)} {formatAmount(result, toCurrency)}
+                  {getCurrencySymbol(toCurrency)} {formatAmount(result)}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {amount} {fromCurrency} = {formatAmount(result, toCurrency)} {toCurrency}
+                  {amount} {fromCurrency} = {formatAmount(result)} {toCurrency}
                 </div>
               </div>
             ) : (
@@ -182,7 +182,7 @@ export const CurrencyConverter: React.FC = () => {
 
         {rates[fromCurrency] && rates[toCurrency] && (
           <div className="text-xs text-center text-muted-foreground">
-            1 {fromCurrency} = {formatAmount(rates[toCurrency] / rates[fromCurrency], toCurrency)} {toCurrency}
+            1 {fromCurrency} = {formatAmount(rates[toCurrency] / rates[fromCurrency])} {toCurrency}
           </div>
         )}
       </CardContent>

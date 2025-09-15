@@ -21,7 +21,7 @@ export const Clock: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isStopwatchRunning) {
       interval = setInterval(() => {
         setStopwatchTime(prev => prev + 10);

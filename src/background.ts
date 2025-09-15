@@ -9,7 +9,10 @@ chrome.runtime.onInstalled.addListener(() => {
 // Handle action button click to open side panel
 chrome.action.onClicked.addListener((tab) => {
   if (tab.id) {
-    chrome.sidePanel.open({ tabId: tab.id });
+    chrome.sidePanel.setOptions({
+      tabId: tab.id,
+      enabled: true
+    });
   }
 });
 
